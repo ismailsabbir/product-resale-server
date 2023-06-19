@@ -1,0 +1,33 @@
+[
+    {
+      "id": "01",
+      "name": "Bedroom",
+      "image":"https://i.ibb.co/Tk1QKG3/bedroom.jpg"
+    },
+    {
+      "id": "02",
+      "name": "Kitchen",
+      "image":"https://i.ibb.co/vmhX88s/kitchenroom.jpg" 
+       },
+    {
+      "id": "03",
+      "name": "Dining room",
+      "image":"https://i.ibb.co/qNVFnC0/din1.png"
+    },
+    {
+      "id": "04",
+      "name": "Drawing room",
+      "image":"https://i.ibb.co/dtzWFns/washroom.png"
+    },
+    {
+        "id": "05",
+        "name": "Wash room",
+        "image":"https://i.ibb.co/S0YFgbS/wash1.png"
+      },
+      {
+        "id":"06",
+        "name":"Electronic",
+        "image":"https://i.ibb.co/x8ZPrK2/electronic.png"
+      }
+
+  ]
