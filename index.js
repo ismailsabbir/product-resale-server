@@ -1,16 +1,17 @@
 const express = require("express");
-const cors = require("cors");
 require("dotenv").config();
+const stripe = require("stripe")(process.env.SECRET_KEY);
+const cors = require("cors");
 const app = express();
 const product = require("./product.json");
 const category = require("./category.json");
 const { MongoClient, ObjectId } = require("mongodb");
 const port = process.env.PORT || 5000;
 app.use(cors());
-// user:product-resale
-// password:QbtF37yMkCaIwx00
+app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_NAME}:${process.env.PASSWORD}@cluster0.3w5podw.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
+console.log(process.env.SECRET_KEY);
 async function run() {
   await client.connect();
   try {
@@ -27,7 +28,77 @@ async function run() {
     const allproductcollection = client
       .db("product-resale")
       .collection("allproduct");
+    const usercollection = client.db("product-resale").collection("userinfo");
+    const cartproductcollection = client
+      .db("product-resale")
+      .collection("cartproduct");
+    const buyproduct = client.db("product-resale").collection("buyproduct");
+    const paymentcollection = client
+      .db("product-resale")
+      .collection("payments");
+    app.post("/create-payment-intent", async (req, res) => {
+      const productinfo = req.body;
+      const price = productinfo.totaldoler;
+      const amount = price * 100;
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
 
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+    app.post("/payments", async (req, res) => {
+      const payment = req.body;
+      const result = await paymentcollection.insertOne(payment);
+      res.send(result);
+      console.log(result);
+    });
+    app.post("/buyproduct", async (req, res) => {
+      const product = req.body;
+      const result = await buyproduct.insertOne(product);
+      res.send(product);
+      console.log(result);
+    });
+    app.get("/buyproduct/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await buyproduct.find(query).toArray();
+      res.send(result);
+    });
+    app.post("/user", async (req, res) => {
+      const user = req.body;
+      const result = await usercollection.insertOne(user);
+      console.log(result);
+      res.send(user);
+    });
+    app.post("/cartproduct", async (req, res) => {
+      const product = req.body;
+      const result = await cartproductcollection.insertOne(product);
+      console.log(result);
+      res.send(product);
+    });
+    app.post("/productadd", async (req, res) => {
+      const product = req.body;
+      const result = await allproductcollection.insertOne(product);
+      res.send(product);
+      console.log(result);
+    });
+    app.get("/cartproduct", async (req, res) => {
+      const query = {};
+      const cursor = cartproductcollection.find(query);
+      const product = await cursor.toArray();
+      res.send(product);
+    });
+    app.delete("/cartproduct/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await cartproductcollection.deleteOne(query);
+      res.send(result);
+      console.log(result);
+    });
     app.get("/allproduct/:id", async (req, res) => {
       const id = req.params.id;
       const query = { category_id: id };
