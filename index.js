@@ -11,7 +11,6 @@ app.use(cors());
 app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_NAME}:${process.env.PASSWORD}@cluster0.3w5podw.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
-console.log(process.env.SECRET_KEY);
 async function run() {
   await client.connect();
   try {
@@ -54,13 +53,22 @@ async function run() {
       const payment = req.body;
       const result = await paymentcollection.insertOne(payment);
       res.send(result);
-      console.log(result);
+    });
+    app.get("/orderproduct", async (req, res) => {
+      const query = {};
+      const result = await paymentcollection.find(query).toArray();
+      res.send(result);
+    });
+    app.delete("/orderproduct/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await paymentcollection.deleteOne(query);
+      res.send(result);
     });
     app.post("/buyproduct", async (req, res) => {
       const product = req.body;
       const result = await buyproduct.insertOne(product);
       res.send(product);
-      console.log(result);
     });
     app.get("/buyproduct/:id", async (req, res) => {
       const id = req.params.id;
@@ -71,20 +79,17 @@ async function run() {
     app.post("/user", async (req, res) => {
       const user = req.body;
       const result = await usercollection.insertOne(user);
-      console.log(result);
       res.send(user);
     });
     app.post("/cartproduct", async (req, res) => {
       const product = req.body;
       const result = await cartproductcollection.insertOne(product);
-      console.log(result);
       res.send(product);
     });
     app.post("/productadd", async (req, res) => {
       const product = req.body;
       const result = await allproductcollection.insertOne(product);
       res.send(product);
-      console.log(result);
     });
     app.get("/cartproduct", async (req, res) => {
       const query = {};
@@ -97,7 +102,6 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const result = await cartproductcollection.deleteOne(query);
       res.send(result);
-      console.log(result);
     });
     app.get("/allproduct/:id", async (req, res) => {
       const id = req.params.id;
@@ -212,8 +216,6 @@ async function run() {
     app.get("/spcolorproduct", async (req, res) => {
       const color = req.query.color;
       const categoryid = req.query.id;
-      console.log(categoryid);
-      console.log(color);
       const categoryquery = { category_id: categoryid };
       const categoryproducrcursor = allproductcollection.find(categoryquery);
       var categoryproduct = await categoryproducrcursor.toArray();
