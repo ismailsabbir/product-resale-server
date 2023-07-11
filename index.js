@@ -12,10 +12,9 @@ app.use(cors());
 app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_NAME}:${process.env.PASSWORD}@cluster0.3w5podw.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
-// console.log(process.env.ACCESS_TOKEN);
+
 function verifyjwt(req, res, next) {
   const jwttoken = req.headers.authorization;
-  // console.log(jwttoken);
   if (!jwttoken) {
     return res.status(401).send({ message: "unauthorized access" });
   }
@@ -29,6 +28,7 @@ function verifyjwt(req, res, next) {
     next();
   });
 }
+
 async function run() {
   await client.connect();
   try {
@@ -53,6 +53,7 @@ async function run() {
     const paymentcollection = client
       .db("product-resale")
       .collection("payments");
+
     const verifyAdmin = async (req, res, next) => {
       const decodedemail = req.decoded.email;
       const query = { email: decodedemail };
@@ -71,7 +72,12 @@ async function run() {
       });
       res.send({ token });
     });
-
+    app.get("/singleuser/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await usercollection.find(query).toArray();
+      res.send(result);
+    });
     app.post("/create-payment-intent", async (req, res) => {
       const productinfo = req.body;
       const price = productinfo.totaldoler;
@@ -219,6 +225,12 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await cartproductcollection.deleteOne(query);
+      res.send(result);
+    });
+    app.delete("/product/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await allproductcollection.deleteOne(query);
       res.send(result);
     });
     app.get("/allproduct/:id", async (req, res) => {
