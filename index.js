@@ -4,15 +4,12 @@ require("dotenv").config();
 const stripe = require("stripe")(process.env.SECRET_KEY);
 const cors = require("cors");
 const app = express();
-const product = require("./product.json");
-const category = require("./category.json");
 const { MongoClient, ObjectId } = require("mongodb");
 const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_NAME}:${process.env.PASSWORD}@cluster0.3w5podw.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
-
 function verifyjwt(req, res, next) {
   const jwttoken = req.headers.authorization;
   if (!jwttoken) {
@@ -28,7 +25,6 @@ function verifyjwt(req, res, next) {
     next();
   });
 }
-
 async function run() {
   await client.connect();
   try {
@@ -53,7 +49,6 @@ async function run() {
     const paymentcollection = client
       .db("product-resale")
       .collection("payments");
-
     const verifyAdmin = async (req, res, next) => {
       const decodedemail = req.decoded.email;
       const query = { email: decodedemail };
@@ -63,7 +58,6 @@ async function run() {
       }
       next();
     };
-
     app.post("/jwt", (req, res) => {
       const user = req.body;
       console.log(user);
@@ -215,11 +209,29 @@ async function run() {
       const result = await allproductcollection.insertOne(product);
       res.send(product);
     });
-    app.get("/cartproduct", async (req, res) => {
-      const query = {};
-      const cursor = cartproductcollection.find(query);
-      const product = await cursor.toArray();
-      res.send(product);
+    // app.get("/cartproduct", async (req, res) => {
+    //   const query = {};
+    //   const cursor = cartproductcollection.find(query);
+    //   const product = await cursor.toArray();
+    //   res.send(product);
+    // });
+
+    app.get("/cartproduct", verifyjwt, async (req, res) => {
+      var Query = {};
+      const decoded = req.decoded;
+      const email = req.query.email;
+      if (req.query.email) {
+        Query = {
+          customerEmail: email,
+        };
+      }
+
+      if (decoded.email !== req.query.email) {
+        res.status(403).send({ message: "forbiden access" });
+      }
+      const result = await cartproductcollection.find(Query).toArray();
+      res.send(result);
+      console.log(product);
     });
     app.delete("/cartproduct/:id", async (req, res) => {
       const id = req.params.id;
