@@ -99,7 +99,6 @@ async function run() {
     app.get("/orderproduct", verifyjwt, async (req, res) => {
       var Query = {};
       const decoded = req.decoded;
-      // console.log(req.query.email);
       if (req.query.email) {
         Query = {
           email: req.query.email,
@@ -225,14 +224,14 @@ async function run() {
           customerEmail: email,
         };
       }
-
       if (decoded.email !== req.query.email) {
         res.status(403).send({ message: "forbiden access" });
       }
       const result = await cartproductcollection.find(Query).toArray();
       res.send(result);
-      console.log(product);
+      console.log(result);
     });
+
     app.delete("/cartproduct/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
