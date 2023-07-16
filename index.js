@@ -208,13 +208,6 @@ async function run() {
       const result = await allproductcollection.insertOne(product);
       res.send(product);
     });
-    // app.get("/cartproduct", async (req, res) => {
-    //   const query = {};
-    //   const cursor = cartproductcollection.find(query);
-    //   const product = await cursor.toArray();
-    //   res.send(product);
-    // });
-
     app.get("/cartproduct", verifyjwt, async (req, res) => {
       var Query = {};
       const decoded = req.decoded;
